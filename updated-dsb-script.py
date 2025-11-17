@@ -312,42 +312,144 @@ def save_results(results, filename="dsb_results.json"):
         print(f"Error saving results: {e}")
         return None
 
+def get_statistics(results):
+    """Genera estadísticas de cambios por clase"""
+    stats = {}
+    for date_str, classes in results.items():
+        for class_name, entries in classes.items():
+            if class_name not in stats:
+                stats[class_name] = {'canceled': 0, 'substituted': 0, 'total': 0}
+
+            for entry in entries:
+                stats[class_name]['total'] += 1
+                if entry.get('is_canceled', False):
+                    stats[class_name]['canceled'] += 1
+                else:
+                    stats[class_name]['substituted'] += 1
+    return stats
+
 def print_summary(results):
     if not results:
-        print("No results found")
+        print("\n" + "="*70)
+        print("✅ SIN CAMBIOS - No hay sustituciones ni cancelaciones")
+        print("="*70)
         return
-    
-    for date_str, classes in sorted(results.items()):
-        print(f"\n{date_str}:")
-        for class_name in sorted(classes.keys()):
-            entries = classes[class_name]
-            print(f" Class {class_name}:")
-            
-            sorted_entries = sorted(entries, key=lambda x: x.get('period', '0') if x.get('period', '0').isdigit() else '0')
-            
-            for entry in sorted_entries:
-                period = entry.get('period', '')
-                subject = entry.get('regular_subject_full', '') or entry.get('subject_full', '') or entry.get('subject', '')
-                room_info = entry.get('room', '') or entry.get('regular_room', '')
-                
-                output = f"   {period}: {subject} ({room_info})"
-                
-                if entry.get('is_canceled', False):
-                    output += f"\n      {entry.get('cancel_reason', 'ENTFALL???')}"
-                else:
+
+    # Mapeo de clases a nombres de hijos
+    class_to_child = {
+        '7d': 'DIEGO',
+        '7e': 'MATEO'
+    }
+
+    # Generar estadísticas
+    stats = get_statistics(results)
+
+    # Imprimir encabezado y resumen
+    print("\n" + "="*70)
+    print("📊 RESUMEN DE CAMBIOS")
+    print("="*70)
+
+    # Asegurar que aparezcan ambas clases
+    all_classes = ['7d', '7e']
+    for class_name in all_classes:
+        child_name = class_to_child.get(class_name, class_name.upper())
+
+        if class_name in stats:
+            stat = stats[class_name]
+            total = stat['total']
+            canceled = stat['canceled']
+            substituted = stat['substituted']
+            icon = "⚠️"
+            print(f"{icon} {child_name} ({class_name}): {total} cambio(s) - {canceled} cancelación(es), {substituted} sustitución(es)")
+        else:
+            icon = "✅"
+            print(f"{icon} {child_name} ({class_name}): Sin cambios")
+
+    print("="*70 + "\n")
+
+    # Agrupar resultados por clase
+    results_by_class = {}
+    for date_str, classes in results.items():
+        for class_name, entries in classes.items():
+            if class_name not in results_by_class:
+                results_by_class[class_name] = {}
+            results_by_class[class_name][date_str] = entries
+
+    # Imprimir resultados por hijo - siempre mostrar ambos
+    for class_name in all_classes:
+        child_name = class_to_child.get(class_name, class_name.upper())
+
+        print("=" * 70)
+        print(f"📚 {child_name} ({class_name.upper()})")
+        print("=" * 70)
+
+        if class_name in results_by_class:
+            dates_data = results_by_class[class_name]
+
+            for date_str in sorted(dates_data.keys()):
+                entries = dates_data[date_str]
+
+                print(f"\n📅 {date_str}")
+                print("-" * 70)
+
+                sorted_entries = sorted(entries, key=lambda x: int(x.get('period', '0')) if x.get('period', '0').isdigit() else 0)
+
+                for entry in sorted_entries:
+                    period = entry.get('period', '')
+
+                    # Obtener asignatura y aula
+                    regular_subject = entry.get('regular_subject_full', '')
+                    subject_full = entry.get('subject_full', '')
+                    subject = regular_subject or subject_full or entry.get('subject', '')
+
+                    regular_room = entry.get('regular_room', '')
+                    room = entry.get('room', '')
+                    # Priorizar aula regular si está disponible, luego la del cambio
+                    room_info = regular_room or room or '---'
+
+                    is_canceled = entry.get('is_canceled', False)
+
+                    # Icono según tipo de cambio
+                    if is_canceled:
+                        icon = "❌"
+                        change_type = "CANCELADA"
+                    else:
+                        icon = "🔄"
+                        change_type = "SUSTITUCIÓN"
+
+                    # Información del profesor
                     original_teacher = entry.get('original_teacher_full', '') or entry.get('original_teacher', '')
                     substitute = entry.get('substitute_full', '') or entry.get('substitute', '')
-                    
-                    if original_teacher and substitute:
-                        output += f"\n      {original_teacher}\n      → {substitute}"
-                    elif original_teacher:
-                        output += f"\n      {original_teacher}"
-                
-                notes = entry.get('notes', '')
-                if notes:
-                    output += f"\n      {notes}"
-                
-                print(output)
+                    regular_teacher = entry.get('regular_teacher', '')
+
+                    print(f"\n  {icon} Periodo {period}: {subject}")
+                    print(f"     Aula: {room_info}")
+
+                    if is_canceled:
+                        print(f"     Estado: {change_type}")
+                        cancel_reason = entry.get('cancel_reason', 'ENTFALL')
+                        if entry.get('notes', ''):
+                            print(f"     Motivo: {entry.get('notes', '')}")
+                    else:
+                        # Mostrar profesor regular si está disponible
+                        if regular_teacher and original_teacher:
+                            print(f"     Profesor habitual: {regular_teacher}")
+
+                        if original_teacher and substitute:
+                            print(f"     Cambio: {original_teacher} → {substitute}")
+                        elif original_teacher:
+                            print(f"     Profesor: {original_teacher}")
+                        elif substitute:
+                            print(f"     Profesor sustituto: {substitute}")
+
+                        if entry.get('notes', ''):
+                            print(f"     Nota: {entry.get('notes', '')}")
+
+                print()
+        else:
+            print("\n  ✅ Sin cambios para esta clase\n")
+
+        print()
 
 def main():
     username, password = "173002", "vplan"
