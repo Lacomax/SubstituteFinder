@@ -14,7 +14,7 @@ SUBJECT_MAPPING = load_json_file("data/subject_mapping.json")
 TEACHER_MAP = load_json_file("data/teacher_map.json")
 CLASS_SCHEDULES = {}
 
-for class_file in ['data/6d.json', 'data/6e.json']:
+for class_file in ['data/7d.json', 'data/7e.json']:
     try:
         data = load_json_file(class_file)
         class_name = data.get('clase', '').lower()
@@ -32,7 +32,7 @@ for class_file in ['data/6d.json', 'data/6e.json']:
                     'teacher': event.get('profesor', '')
                 }
             CLASS_SCHEDULES[class_name] = schedule
-    except Exception as e: 
+    except Exception as e:
         print(f"Error processing schedule {class_file}: {e}")
 
 def fetch_dsb_data(username, password):
@@ -181,7 +181,7 @@ def extract_class_info(soup, target_classes):
             else:
                 raw_text = re.sub(r'\s+', '', row.text.strip().replace('\xa0', ' ').replace('\u00a0', ' ').replace('\t', ' '))
                 if any(tc in raw_text for tc in target_classes):
-                    fallback_match = re.match(r'^(6[de])(\d)([A-Z]{2,4})([A-Z]{2,4})(E\d{2})$', raw_text)
+                    fallback_match = re.match(r'^(7[de])(\d)([A-Z]{2,4})([A-Z]{2,4})(E\d{2})$', raw_text)
                     if fallback_match:
                         class_name, period, substitute, original_teacher, room = fallback_match.groups()
                         entry = {
@@ -248,7 +248,7 @@ def extract_timetable_info(json_data, session, target_classes):
                     entry['day_of_week'] = extract_day_of_week(date_str)
                     
                     normalized_class = class_name.lower()
-                    if len(normalized_class) > 2 and normalized_class[:2] in ['6d', '6e']:
+                    if len(normalized_class) > 2 and normalized_class[:2] in ['7d', '7e']:
                         normalized_class = normalized_class[:2]
                     
                     entry = enhance_with_schedule(entry, normalized_class)
@@ -312,46 +312,103 @@ def save_results(results, filename="dsb_results.json"):
         print(f"Error saving results: {e}")
         return None
 
+def get_statistics(results):
+    """Genera estadísticas de cambios por clase"""
+    stats = {}
+    for date_str, classes in results.items():
+        for class_name, entries in classes.items():
+            if class_name not in stats:
+                stats[class_name] = {'canceled': 0, 'substituted': 0, 'total': 0}
+
+            for entry in entries:
+                stats[class_name]['total'] += 1
+                if entry.get('is_canceled', False):
+                    stats[class_name]['canceled'] += 1
+                else:
+                    stats[class_name]['substituted'] += 1
+    return stats
+
 def print_summary(results):
     if not results:
-        print("No results found")
+        print("\n✅ Sin cambios - No hay sustituciones ni cancelaciones")
         return
-    
-    for date_str, classes in sorted(results.items()):
-        print(f"\n{date_str}:")
-        for class_name in sorted(classes.keys()):
-            entries = classes[class_name]
-            print(f" Class {class_name}:")
-            
-            sorted_entries = sorted(entries, key=lambda x: x.get('period', '0') if x.get('period', '0').isdigit() else '0')
-            
-            for entry in sorted_entries:
-                period = entry.get('period', '')
-                subject = entry.get('regular_subject_full', '') or entry.get('subject_full', '') or entry.get('subject', '')
-                room_info = entry.get('room', '') or entry.get('regular_room', '')
-                
-                output = f"   {period}: {subject} ({room_info})"
-                
-                if entry.get('is_canceled', False):
-                    output += f"\n      {entry.get('cancel_reason', 'ENTFALL???')}"
-                else:
-                    original_teacher = entry.get('original_teacher_full', '') or entry.get('original_teacher', '')
+
+    # Mapeo de clases a nombres de hijos
+    class_to_child = {
+        '7d': 'Diego',
+        '7e': 'Mateo'
+    }
+
+    all_classes = ['7d', '7e']
+
+    # Agrupar por fecha
+    for date_str in sorted(results.keys()):
+        print(f"\n{'='*70}")
+        print(f"📅 {date_str}")
+        print('='*70)
+
+        classes = results[date_str]
+
+        # Mostrar cada clase (hijo)
+        for class_name in all_classes:
+            child_name = class_to_child.get(class_name, class_name.upper())
+
+            if class_name in classes:
+                entries = classes[class_name]
+                print(f"\n  📚 {child_name} ({class_name}):")
+
+                sorted_entries = sorted(entries, key=lambda x: int(x.get('period', '0')) if x.get('period', '0').isdigit() else 0)
+
+                for entry in sorted_entries:
+                    period = entry.get('period', '')
+
+                    # Obtener asignatura y aula
+                    regular_subject = entry.get('regular_subject_full', '')
+                    subject_full = entry.get('subject_full', '')
+                    subject = regular_subject or subject_full or entry.get('subject', '')
+
+                    regular_room = entry.get('regular_room', '')
+                    room = entry.get('room', '')
+                    room_info = regular_room or room or '---'
+
+                    is_canceled = entry.get('is_canceled', False)
+
+                    # Información del profesor (sin asignatura para el original)
+                    original_teacher_full = entry.get('original_teacher_full', '')
+                    original_teacher_code = entry.get('original_teacher', '')
+
+                    # Extraer solo el nombre del profesor original (sin la asignatura)
+                    if original_teacher_full and '(' in original_teacher_full:
+                        original_teacher = original_teacher_full.split('(')[0].strip()
+                    else:
+                        original_teacher = original_teacher_full or original_teacher_code
+
                     substitute = entry.get('substitute_full', '') or entry.get('substitute', '')
-                    
-                    if original_teacher and substitute:
-                        output += f"\n      {original_teacher}\n      → {substitute}"
-                    elif original_teacher:
-                        output += f"\n      {original_teacher}"
-                
-                notes = entry.get('notes', '')
-                if notes:
-                    output += f"\n      {notes}"
-                
-                print(output)
+
+                    # Formato compacto
+                    if is_canceled:
+                        print(f"    ❌ Period {period}: {subject} ({room_info})")
+                        print(f"       CANCELADA")
+                        if entry.get('notes', ''):
+                            print(f"       {entry.get('notes', '')}")
+                    else:
+                        print(f"    🔄 Period {period}: {subject} ({room_info})")
+                        if original_teacher and substitute:
+                            print(f"       {original_teacher} ->")
+                            print(f"       {substitute}")
+                        elif substitute:
+                            print(f"       Sustituto: {substitute}")
+
+                        if entry.get('notes', ''):
+                            print(f"       Nota: {entry.get('notes', '')}")
+            else:
+                print(f"\n  📚 {child_name} ({class_name}): ✅ Sin cambios")
+
+    print()
 
 def main():
     username, password = "173002", "vplan"
-    target_classes = ["6d", "6D", "6.d", "6e", "6E", "6.e"]
+    target_classes = ["7d", "7D", "7.d", "7e", "7E", "7.e"]
     
     json_data, session = fetch_dsb_data(username, password)
     if not json_data:
