@@ -1,0 +1,245 @@
+{
+  "clase": "6e",
+  "eventos": [
+    {
+      "dia": 1,
+      "periodo": 1,
+      "asignatura": "d",
+      "aula": "N8"
+    },
+    {
+      "dia": 1,
+      "periodo": 2,
+      "asignatura": "e",
+      "aula": "N8"
+    },
+    {
+      "dia": 1,
+      "periodo": 3,
+      "asignatura": "sm/sw/sw/sm",
+      "aula": "TH1/TH4/TH3/TH2"
+    },
+    {
+      "dia": 1,
+      "periodo": 4,
+      "asignatura": "sw/sm/sw/sm",
+      "aula": "TH3/TH2/TH4/TH1"
+    },
+    {
+      "dia": 1,
+      "periodo": 5,
+      "asignatura": "m",
+      "aula": "N8"
+    },
+    {
+      "dia": 1,
+      "periodo": 6,
+      "asignatura": "mint/mint",
+      "aula": "N8/A108"
+    },
+    {
+      "dia": 1,
+      "periodo": 8,
+      "asignatura": "qhu6",
+      "aula": "N8"
+    },
+    {
+      "dia": 1,
+      "periodo": 9,
+      "asignatura": "ffmd-gta",
+      "aula": "N8"
+    },
+    {
+      "dia": 2,
+      "periodo": 1,
+      "asignatura": "mu",
+      "aula": "A301"
+    },
+    {
+      "dia": 2,
+      "periodo": 2,
+      "asignatura": "l/f",
+      "aula": "N2/N8"
+    },
+    {
+      "dia": 2,
+      "periodo": 3,
+      "asignatura": "l/f",
+      "aula": "N2/N8"
+    },
+    {
+      "dia": 2,
+      "periodo": 4,
+      "asignatura": "m",
+      "aula": "N8"
+    },
+    {
+      "dia": 2,
+      "periodo": 5,
+      "asignatura": "g",
+      "aula": "N8"
+    },
+    {
+      "dia": 2,
+      "periodo": 6,
+      "asignatura": "g",
+      "aula": "N8"
+    },
+    {
+      "dia": 2,
+      "periodo": 8,
+      "asignatura": "qhu6",
+      "aula": "N8"
+    },
+    {
+      "dia": 2,
+      "periodo": 9,
+      "asignatura": "ffme-gta",
+      "aula": "N8"
+    },
+    {
+      "dia": 3,
+      "periodo": 1,
+      "asignatura": "mu",
+      "aula": "A307"
+    },
+    {
+      "dia": 3,
+      "periodo": 2,
+      "asignatura": "ku",
+      "aula": "B104"
+    },
+    {
+      "dia": 3,
+      "periodo": 3,
+      "asignatura": "ku",
+      "aula": "B104"
+    },
+    {
+      "dia": 3,
+      "periodo": 4,
+      "asignatura": "d",
+      "aula": "N8"
+    },
+    {
+      "dia": 3,
+      "periodo": 5,
+      "asignatura": "lint/fint/fint",
+      "aula": "A101/N8/A204"
+    },
+    {
+      "dia": 3,
+      "periodo": 6,
+      "asignatura": "l/f",
+      "aula": "A101/N8"
+    },
+    {
+      "dia": 3,
+      "periodo": 8,
+      "asignatura": "qhu6",
+      "aula": "N8"
+    },
+    {
+      "dia": 3,
+      "periodo": 9,
+      "asignatura": "ffmm-gta",
+      "aula": "N8"
+    },
+    {
+      "dia": 4,
+      "periodo": 1,
+      "asignatura": "d",
+      "aula": "N8"
+    },
+    {
+      "dia": 4,
+      "periodo": 2,
+      "asignatura": "f/l",
+      "aula": "N8/N2"
+    },
+    {
+      "dia": 4,
+      "periodo": 3,
+      "asignatura": "eth/k/ev",
+      "aula": "A104/N4/N8"
+    },
+    {
+      "dia": 4,
+      "periodo": 4,
+      "asignatura": "ev/k/eth",
+      "aula": "N8/N4/A104"
+    },
+    {
+      "dia": 4,
+      "periodo": 5,
+      "asignatura": "e",
+      "aula": "N8"
+    },
+    {
+      "dia": 4,
+      "periodo": 7,
+      "asignatura": "sm/sm/sw/sw",
+      "aula": "TH2/TH1/TH4/TH3"
+    },
+    {
+      "dia": 4,
+      "periodo": 8,
+      "asignatura": "ntbio",
+      "aula": "A15"
+    },
+    {
+      "dia": 4,
+      "periodo": 9,
+      "asignatura": "ntbio",
+      "aula": "A15"
+    },
+    {
+      "dia": 5,
+      "periodo": 1,
+      "asignatura": "e",
+      "aula": "N8"
+    },
+    {
+      "dia": 5,
+      "periodo": 2,
+      "asignatura": "e",
+      "aula": "N8"
+    },
+    {
+      "dia": 5,
+      "periodo": 3,
+      "asignatura": "m",
+      "aula": "N8"
+    },
+    {
+      "dia": 5,
+      "periodo": 4,
+      "asignatura": "m",
+      "aula": "N8"
+    },
+    {
+      "dia": 5,
+      "periodo": 5,
+      "asignatura": "d",
+      "aula": "N8"
+    },
+    {
+      "dia": 5,
+      "periodo": 6,
+      "asignatura": "ntinf",
+      "aula": "B101"
+    },
+    {
+      "dia": 5,
+      "periodo": 7,
+      "asignatura": "qhu",
+      "aula": "N4"
+    },
+    {
+      "dia": 5,
+      "periodo": 8,
+      "asignatura": "qhu",
+      "aula": "N4"
+    }
+  ]
+}
