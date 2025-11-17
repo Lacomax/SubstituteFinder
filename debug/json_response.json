@@ -1,0 +1,100 @@
+[
+  {
+    "Id": "f6ce0e33-5f28-43ec-a35b-c88b3b83ea26_638785795766270000",
+    "Date": "26.03.2025 09:52",
+    "Title": "VPlan_S_m - subst_001",
+    "Detail": "",
+    "Tags": "",
+    "ConType": 2,
+    "Prio": 0,
+    "Index": 0,
+    "Childs": [
+      {
+        "Id": "f6ce0e33-5f28-43ec-a35b-c88b3b83ea26_638785795766270000_123",
+        "Date": "26.03.2025 09:52",
+        "Title": "subst_001",
+        "Detail": "https://light.dsbcontrol.de/DSBlightWebsite/Data/916c89d5-36aa-4de4-8865-80c26b53b0a4/f6ce0e33-5f28-43ec-a35b-c88b3b83ea26/subst_001.htm?638785825166748201",
+        "Tags": "",
+        "ConType": 6,
+        "Prio": 0,
+        "Index": 0,
+        "Childs": [],
+        "Preview": "916c89d5-36aa-4de4-8865-80c26b53b0a4/f6ce0e33-5f28-43ec-a35b-c88b3b83ea26/preview.png?638785825166748201"
+      },
+      {
+        "Id": "f6ce0e33-5f28-43ec-a35b-c88b3b83ea26_638785795766270000_124",
+        "Date": "26.03.2025 09:52",
+        "Title": "subst_001",
+        "Detail": "https://light.dsbcontrol.de/DSBlightWebsite/Data/916c89d5-36aa-4de4-8865-80c26b53b0a4/f6ce0e33-5f28-43ec-a35b-c88b3b83ea26/subst_002.htm?638785825166748201",
+        "Tags": "",
+        "ConType": 6,
+        "Prio": 0,
+        "Index": 1,
+        "Childs": [],
+        "Preview": "916c89d5-36aa-4de4-8865-80c26b53b0a4/f6ce0e33-5f28-43ec-a35b-c88b3b83ea26/preview.png?638785825166748201"
+      },
+      {
+        "Id": "f6ce0e33-5f28-43ec-a35b-c88b3b83ea26_638785795766270000_125",
+        "Date": "26.03.2025 09:52",
+        "Title": "subst_001",
+        "Detail": "https://light.dsbcontrol.de/DSBlightWebsite/Data/916c89d5-36aa-4de4-8865-80c26b53b0a4/f6ce0e33-5f28-43ec-a35b-c88b3b83ea26/subst_003.htm?638785825166748201",
+        "Tags": "",
+        "ConType": 6,
+        "Prio": 0,
+        "Index": 125,
+        "Childs": [],
+        "Preview": "916c89d5-36aa-4de4-8865-80c26b53b0a4/f6ce0e33-5f28-43ec-a35b-c88b3b83ea26/preview.png?638785825166748201"
+      }
+    ],
+    "Preview": ""
+  },
+  {
+    "Id": "d68a9b78-e9d6-49cc-bdf6-49420588e650_638785795749730000",
+    "Date": "26.03.2025 09:52",
+    "Title": "VPlan_S_h - subst_001",
+    "Detail": "",
+    "Tags": "",
+    "ConType": 2,
+    "Prio": 0,
+    "Index": 0,
+    "Childs": [
+      {
+        "Id": "d68a9b78-e9d6-49cc-bdf6-49420588e650_638785795749730000_168",
+        "Date": "26.03.2025 09:52",
+        "Title": "subst_001",
+        "Detail": "https://light.dsbcontrol.de/DSBlightWebsite/Data/916c89d5-36aa-4de4-8865-80c26b53b0a4/d68a9b78-e9d6-49cc-bdf6-49420588e650/subst_001.htm?638785825166748201",
+        "Tags": "",
+        "ConType": 6,
+        "Prio": 0,
+        "Index": 0,
+        "Childs": [],
+        "Preview": "916c89d5-36aa-4de4-8865-80c26b53b0a4/d68a9b78-e9d6-49cc-bdf6-49420588e650/preview.png?638785825166748201"
+      },
+      {
+        "Id": "d68a9b78-e9d6-49cc-bdf6-49420588e650_638785795749730000_169",
+        "Date": "26.03.2025 09:52",
+        "Title": "subst_001",
+        "Detail": "https://light.dsbcontrol.de/DSBlightWebsite/Data/916c89d5-36aa-4de4-8865-80c26b53b0a4/d68a9b78-e9d6-49cc-bdf6-49420588e650/subst_002.htm?638785825166748201",
+        "Tags": "",
+        "ConType": 6,
+        "Prio": 0,
+        "Index": 1,
+        "Childs": [],
+        "Preview": "916c89d5-36aa-4de4-8865-80c26b53b0a4/d68a9b78-e9d6-49cc-bdf6-49420588e650/preview.png?638785825166748201"
+      },
+      {
+        "Id": "d68a9b78-e9d6-49cc-bdf6-49420588e650_638785795749730000_170",
+        "Date": "26.03.2025 09:52",
+        "Title": "subst_001",
+        "Detail": "https://light.dsbcontrol.de/DSBlightWebsite/Data/916c89d5-36aa-4de4-8865-80c26b53b0a4/d68a9b78-e9d6-49cc-bdf6-49420588e650/subst_003.htm?638785825166748201",
+        "Tags": "",
+        "ConType": 6,
+        "Prio": 0,
+        "Index": 170,
+        "Childs": [],
+        "Preview": "916c89d5-36aa-4de4-8865-80c26b53b0a4/d68a9b78-e9d6-49cc-bdf6-49420588e650/preview.png?638785825166748201"
+      }
+    ],
+    "Preview": ""
+  }
+]
