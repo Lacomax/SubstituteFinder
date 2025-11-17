@@ -14,7 +14,7 @@ SUBJECT_MAPPING = load_json_file("data/subject_mapping.json")
 TEACHER_MAP = load_json_file("data/teacher_map.json")
 CLASS_SCHEDULES = {}
 
-for class_file in ['data/6d.json', 'data/6e.json']:
+for class_file in ['data/7d.json', 'data/7e.json']:
     try:
         data = load_json_file(class_file)
         class_name = data.get('clase', '').lower()
@@ -32,7 +32,7 @@ for class_file in ['data/6d.json', 'data/6e.json']:
                     'teacher': event.get('profesor', '')
                 }
             CLASS_SCHEDULES[class_name] = schedule
-    except Exception as e: 
+    except Exception as e:
         print(f"Error processing schedule {class_file}: {e}")
 
 def fetch_dsb_data(username, password):
@@ -181,7 +181,7 @@ def extract_class_info(soup, target_classes):
             else:
                 raw_text = re.sub(r'\s+', '', row.text.strip().replace('\xa0', ' ').replace('\u00a0', ' ').replace('\t', ' '))
                 if any(tc in raw_text for tc in target_classes):
-                    fallback_match = re.match(r'^(6[de])(\d)([A-Z]{2,4})([A-Z]{2,4})(E\d{2})$', raw_text)
+                    fallback_match = re.match(r'^(7[de])(\d)([A-Z]{2,4})([A-Z]{2,4})(E\d{2})$', raw_text)
                     if fallback_match:
                         class_name, period, substitute, original_teacher, room = fallback_match.groups()
                         entry = {
@@ -248,7 +248,7 @@ def extract_timetable_info(json_data, session, target_classes):
                     entry['day_of_week'] = extract_day_of_week(date_str)
                     
                     normalized_class = class_name.lower()
-                    if len(normalized_class) > 2 and normalized_class[:2] in ['6d', '6e']:
+                    if len(normalized_class) > 2 and normalized_class[:2] in ['7d', '7e']:
                         normalized_class = normalized_class[:2]
                     
                     entry = enhance_with_schedule(entry, normalized_class)
@@ -351,7 +351,7 @@ def print_summary(results):
 
 def main():
     username, password = "173002", "vplan"
-    target_classes = ["6d", "6D", "6.d", "6e", "6E", "6.e"]
+    target_classes = ["7d", "7D", "7.d", "7e", "7E", "7.e"]
     
     json_data, session = fetch_dsb_data(username, password)
     if not json_data:
