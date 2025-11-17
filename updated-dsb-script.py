@@ -330,67 +330,32 @@ def get_statistics(results):
 
 def print_summary(results):
     if not results:
-        print("\n" + "="*70)
-        print("✅ SIN CAMBIOS - No hay sustituciones ni cancelaciones")
-        print("="*70)
+        print("\n✅ Sin cambios - No hay sustituciones ni cancelaciones")
         return
 
     # Mapeo de clases a nombres de hijos
     class_to_child = {
-        '7d': 'DIEGO',
-        '7e': 'MATEO'
+        '7d': 'Diego',
+        '7e': 'Mateo'
     }
 
-    # Generar estadísticas
-    stats = get_statistics(results)
-
-    # Imprimir encabezado y resumen
-    print("\n" + "="*70)
-    print("📊 RESUMEN DE CAMBIOS")
-    print("="*70)
-
-    # Asegurar que aparezcan ambas clases
     all_classes = ['7d', '7e']
-    for class_name in all_classes:
-        child_name = class_to_child.get(class_name, class_name.upper())
 
-        if class_name in stats:
-            stat = stats[class_name]
-            total = stat['total']
-            canceled = stat['canceled']
-            substituted = stat['substituted']
-            icon = "⚠️"
-            print(f"{icon} {child_name} ({class_name}): {total} cambio(s) - {canceled} cancelación(es), {substituted} sustitución(es)")
-        else:
-            icon = "✅"
-            print(f"{icon} {child_name} ({class_name}): Sin cambios")
+    # Agrupar por fecha
+    for date_str in sorted(results.keys()):
+        print(f"\n{'='*70}")
+        print(f"📅 {date_str}")
+        print('='*70)
 
-    print("="*70 + "\n")
+        classes = results[date_str]
 
-    # Agrupar resultados por clase
-    results_by_class = {}
-    for date_str, classes in results.items():
-        for class_name, entries in classes.items():
-            if class_name not in results_by_class:
-                results_by_class[class_name] = {}
-            results_by_class[class_name][date_str] = entries
+        # Mostrar cada clase (hijo)
+        for class_name in all_classes:
+            child_name = class_to_child.get(class_name, class_name.upper())
 
-    # Imprimir resultados por hijo - siempre mostrar ambos
-    for class_name in all_classes:
-        child_name = class_to_child.get(class_name, class_name.upper())
-
-        print("=" * 70)
-        print(f"📚 {child_name} ({class_name.upper()})")
-        print("=" * 70)
-
-        if class_name in results_by_class:
-            dates_data = results_by_class[class_name]
-
-            for date_str in sorted(dates_data.keys()):
-                entries = dates_data[date_str]
-
-                print(f"\n📅 {date_str}")
-                print("-" * 70)
+            if class_name in classes:
+                entries = classes[class_name]
+                print(f"\n  📚 {child_name} ({class_name}):")
 
                 sorted_entries = sorted(entries, key=lambda x: int(x.get('period', '0')) if x.get('period', '0').isdigit() else 0)
 
@@ -404,52 +369,42 @@ def print_summary(results):
 
                     regular_room = entry.get('regular_room', '')
                     room = entry.get('room', '')
-                    # Priorizar aula regular si está disponible, luego la del cambio
                     room_info = regular_room or room or '---'
 
                     is_canceled = entry.get('is_canceled', False)
 
-                    # Icono según tipo de cambio
-                    if is_canceled:
-                        icon = "❌"
-                        change_type = "CANCELADA"
-                    else:
-                        icon = "🔄"
-                        change_type = "SUSTITUCIÓN"
+                    # Información del profesor (sin asignatura para el original)
+                    original_teacher_full = entry.get('original_teacher_full', '')
+                    original_teacher_code = entry.get('original_teacher', '')
 
-                    # Información del profesor
-                    original_teacher = entry.get('original_teacher_full', '') or entry.get('original_teacher', '')
+                    # Extraer solo el nombre del profesor original (sin la asignatura)
+                    if original_teacher_full and '(' in original_teacher_full:
+                        original_teacher = original_teacher_full.split('(')[0].strip()
+                    else:
+                        original_teacher = original_teacher_full or original_teacher_code
+
                     substitute = entry.get('substitute_full', '') or entry.get('substitute', '')
-                    regular_teacher = entry.get('regular_teacher', '')
 
-                    print(f"\n  {icon} Periodo {period}: {subject}")
-                    print(f"     Aula: {room_info}")
-
+                    # Formato compacto
                     if is_canceled:
-                        print(f"     Estado: {change_type}")
-                        cancel_reason = entry.get('cancel_reason', 'ENTFALL')
+                        print(f"    ❌ Period {period}: {subject} ({room_info})")
+                        print(f"       CANCELADA")
                         if entry.get('notes', ''):
-                            print(f"     Motivo: {entry.get('notes', '')}")
+                            print(f"       {entry.get('notes', '')}")
                     else:
-                        # Mostrar profesor regular si está disponible
-                        if regular_teacher and original_teacher:
-                            print(f"     Profesor habitual: {regular_teacher}")
-
+                        print(f"    🔄 Period {period}: {subject} ({room_info})")
                         if original_teacher and substitute:
-                            print(f"     Cambio: {original_teacher} → {substitute}")
-                        elif original_teacher:
-                            print(f"     Profesor: {original_teacher}")
+                            print(f"       {original_teacher} ->")
+                            print(f"       {substitute}")
                         elif substitute:
-                            print(f"     Profesor sustituto: {substitute}")
+                            print(f"       Sustituto: {substitute}")
 
                         if entry.get('notes', ''):
-                            print(f"     Nota: {entry.get('notes', '')}")
+                            print(f"       Nota: {entry.get('notes', '')}")
+            else:
+                print(f"\n  📚 {child_name} ({class_name}): ✅ Sin cambios")
 
-                print()
-        else:
-            print("\n  ✅ Sin cambios para esta clase\n")
-
-        print()
+    print()
 
 def main():
     username, password = "173002", "vplan"
