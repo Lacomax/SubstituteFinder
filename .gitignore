@@ -20,6 +20,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# Generated files from script execution
+debug/
+results/
+
 # Virtual environments
 venv/
 env/
