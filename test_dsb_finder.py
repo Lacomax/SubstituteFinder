@@ -181,6 +181,33 @@ class TestSubjectMappingNormalization(unittest.TestCase):
                          "DaZ Plus 7/Int. Französisch")
 
 
+class TestCredentials(unittest.TestCase):
+    def setUp(self):
+        self._saved = {k: os.environ.pop(k, None)
+                       for k in ("DSB_USERNAME", "DSB_PASSWORD")}
+
+    def tearDown(self):
+        for k, v in self._saved.items():
+            if v is not None:
+                os.environ[k] = v
+            else:
+                os.environ.pop(k, None)
+
+    def test_credentials_come_from_config(self):
+        cfg = {"credentials": {"username": "user1", "password": "pass1"}}
+        self.assertEqual(dsb_finder.get_credentials(cfg), ("user1", "pass1"))
+
+    def test_env_vars_override_config(self):
+        os.environ["DSB_USERNAME"] = "env_user"
+        os.environ["DSB_PASSWORD"] = "env_pass"
+        cfg = {"credentials": {"username": "user1", "password": "pass1"}}
+        self.assertEqual(dsb_finder.get_credentials(cfg),
+                         ("env_user", "env_pass"))
+
+    def test_missing_credentials_returns_none(self):
+        self.assertEqual(dsb_finder.get_credentials({}), (None, None))
+
+
 class TestConsoleEncoding(unittest.TestCase):
     def test_print_summary_survives_cp1252_stdout(self):
         """On Windows the console can be cp1252; emoji output must not

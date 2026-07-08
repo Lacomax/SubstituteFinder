@@ -1,0 +1,8 @@
+{
+  "credentials": {"username": "TU_USUARIO_DSB", "password": "TU_CONTRASEÑA_DSB"},
+  "children": [
+    {"name": "NombreHijo1", "class": "7d", "schedule": "data/7d.json"},
+    {"name": "NombreHijo2", "class": "7e", "schedule": "data/7e.json"}
+  ],
+  "notify": {"method": "none", "topic": ""}
+}

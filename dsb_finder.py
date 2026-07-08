@@ -15,6 +15,15 @@ def load_json_file(filename):
     try: return json.load(open(filename, 'r', encoding='utf-8'))
     except Exception as e: return {}
 
+CONFIG = load_json_file("config.json")
+
+def get_credentials(config=None):
+    cfg = CONFIG if config is None else config
+    creds = cfg.get('credentials', {})
+    username = os.environ.get('DSB_USERNAME') or creds.get('username')
+    password = os.environ.get('DSB_PASSWORD') or creds.get('password')
+    return username, password
+
 def load_subject_mapping(filename):
     # Lookups lowercase the subject code, so normalize the keys here to
     # tolerate mixed-case entries in the file (e.g. "DaZ-plus7/intf").
@@ -435,7 +444,11 @@ def print_summary(results):
     print()
 
 def main():
-    username, password = "173002", "vplan"
+    username, password = get_credentials()
+    if not username or not password:
+        print("Faltan credenciales DSB: copia config.example.json a config.json "
+              "y rellena usuario/contraseña, o define DSB_USERNAME y DSB_PASSWORD.")
+        return
     target_classes = ["7d", "7D", "7.d", "7e", "7E", "7.e"]
     
     json_data, session = fetch_dsb_data(username, password)

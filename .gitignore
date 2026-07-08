@@ -24,6 +24,9 @@ wheels/
 debug/
 results/
 
+# Local configuration with credentials
+config.json
+
 # Virtual environments
 venv/
 env/
