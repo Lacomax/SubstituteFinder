@@ -17,6 +17,19 @@ def load_json_file(filename):
 
 CONFIG = load_json_file("config.json")
 
+def class_variants(cls):
+    # "7d" -> ["7d", "7D", "7.d", "7.D"], the forms the plan uses
+    base = cls.lower()
+    return [base, base.upper(), f"{base[:-1]}.{base[-1]}", f"{base[:-1]}.{base[-1].upper()}"]
+
+def target_classes_for(children):
+    return [v for ch in children for v in class_variants(ch['class'])]
+
+CHILDREN = CONFIG.get('children', [])
+BASE_CLASSES = [ch['class'].lower() for ch in CHILDREN]
+TARGET_CLASSES = target_classes_for(CHILDREN)
+CLASS_TO_CHILD = {ch['class'].lower(): ch['name'] for ch in CHILDREN}
+
 def get_credentials(config=None):
     cfg = CONFIG if config is None else config
     creds = cfg.get('credentials', {})
@@ -33,7 +46,7 @@ SUBJECT_MAPPING = load_subject_mapping("data/subject_mapping.json")
 TEACHER_MAP = load_json_file("data/teacher_map.json")
 CLASS_SCHEDULES = {}
 
-for class_file in ['data/7d.json', 'data/7e.json']:
+for class_file in [ch.get('schedule') for ch in CHILDREN if ch.get('schedule')]:
     try:
         data = load_json_file(class_file)
         class_name = data.get('clase', '').lower()
@@ -206,7 +219,8 @@ def extract_class_info(soup, target_classes):
             else:
                 raw_text = re.sub(r'\s+', '', row.text.strip().replace('\xa0', ' ').replace('\u00a0', ' ').replace('\t', ' '))
                 if any(tc in raw_text for tc in target_classes):
-                    fallback_match = re.match(r'^(7[de])(\d)([A-Z]{2,4})([A-Z]{2,4})(E\d{2})$', raw_text)
+                    alternation = '|'.join(re.escape(tc) for tc in sorted(target_classes, key=len, reverse=True))
+                    fallback_match = re.match(rf'^({alternation})(\d)([A-Z]{{2,4}})([A-Z]{{2,4}})(E\d{{2}})$', raw_text)
                     if fallback_match:
                         class_name, period, substitute, original_teacher, room = fallback_match.groups()
                         entry = {
@@ -276,8 +290,10 @@ def extract_timetable_info(json_data, session, target_classes):
                     entry['day_of_week'] = extract_day_of_week(date_str)
                     
                     normalized_class = class_name.lower()
-                    if len(normalized_class) > 2 and normalized_class[:2] in ['7d', '7e']:
-                        normalized_class = normalized_class[:2]
+                    for base in sorted({tc.lower() for tc in target_classes}, key=len, reverse=True):
+                        if len(normalized_class) > len(base) and normalized_class.startswith(base):
+                            normalized_class = base
+                            break
                     
                     entry = enhance_with_schedule(entry, normalized_class)
                     entry = enhance_entry_details(entry)
@@ -365,13 +381,8 @@ def print_summary(results):
         print("\n✅ Sin cambios - No hay sustituciones ni cancelaciones")
         return
 
-    # Mapeo de clases a nombres de hijos
-    class_to_child = {
-        '7d': 'Diego',
-        '7e': 'Mateo'
-    }
-
-    all_classes = ['7d', '7e']
+    class_to_child = CLASS_TO_CHILD
+    all_classes = BASE_CLASSES or sorted({c for classes in results.values() for c in classes})
 
     # Agrupar por fecha
     for date_str in sorted(results.keys()):
@@ -449,7 +460,10 @@ def main():
         print("Faltan credenciales DSB: copia config.example.json a config.json "
               "y rellena usuario/contraseña, o define DSB_USERNAME y DSB_PASSWORD.")
         return
-    target_classes = ["7d", "7D", "7.d", "7e", "7E", "7.e"]
+    if not TARGET_CLASSES:
+        print("No hay hijos/clases configurados: revisa 'children' en config.json.")
+        return
+    target_classes = TARGET_CLASSES
     
     json_data, session = fetch_dsb_data(username, password)
     if not json_data:

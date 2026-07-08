@@ -60,34 +60,28 @@ python dsb_finder.py
 
 ## ⚙️ Configuración
 
-### 1. Credenciales DSB
+### 1. Archivo de configuración
 
-Edita `dsb_finder.py` y modifica las credenciales (línea 410):
+Copia la plantilla y rellena tus datos:
 
-```python
-username, password = "TU_USUARIO", "TU_CONTRASEÑA"
+```bash
+cp config.example.json config.json
 ```
 
-### 2. Clases objetivo
-
-Modifica las clases que quieres seguir (línea 411):
-
-```python
-target_classes = ["7d", "7D", "7.d", "7e", "7E", "7.e"]
-```
-
-### 3. Nombres de hijos
-
-Personaliza los nombres en la función `print_summary` (líneas 337-340):
-
-```python
-class_to_child = {
-    '7d': 'Diego',
-    '7e': 'Mateo'
+```json
+{
+  "credentials": {"username": "TU_USUARIO_DSB", "password": "TU_CONTRASEÑA_DSB"},
+  "children": [
+    {"name": "NombreHijo1", "class": "7d", "schedule": "data/7d.json"},
+    {"name": "NombreHijo2", "class": "7e", "schedule": "data/7e.json"}
+  ],
+  "notify": {"method": "none", "topic": ""}
 }
 ```
 
-### 4. Horarios de clase
+`config.json` está en `.gitignore`: tus credenciales no se suben a git. También puedes usar las variables de entorno `DSB_USERNAME` y `DSB_PASSWORD`, que tienen prioridad sobre el archivo. Las clases objetivo, los nombres mostrados y los horarios cargados se derivan todos de `children`.
+
+### 2. Horarios de clase
 
 Los horarios están en los archivos `data/7d.json` y `data/7e.json`.
 
@@ -178,16 +172,16 @@ Edita `data/subject_mapping.json`:
 
 Para cambiar de 7.Klasse a 8.Klasse:
 
-1. Renombra o crea `data/8d.json` y `data/8e.json`
-2. Modifica línea 17 en `dsb_finder.py`:
-   ```python
-   for class_file in ['data/8d.json', 'data/8e.json']:
+1. Crea `data/8d.json` y `data/8e.json` con los horarios nuevos
+2. Actualiza `config.json`:
+   ```json
+   "children": [
+     {"name": "NombreHijo1", "class": "8d", "schedule": "data/8d.json"},
+     {"name": "NombreHijo2", "class": "8e", "schedule": "data/8e.json"}
+   ]
    ```
-3. Modifica línea 411:
-   ```python
-   target_classes = ["8d", "8D", "8.d", "8e", "8E", "8.e"]
-   ```
-4. Actualiza líneas 251, 337-340 con '8d' y '8e'
+
+No hay que tocar el código.
 
 ## 🐛 Solución de problemas
 

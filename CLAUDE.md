@@ -30,17 +30,9 @@ On legacy Windows consoles (cp1252) unsupported characters degrade to `?` (stdou
 3. **Enrich** (`enhance_with_schedule`, `enhance_entry_details`): entries are cross-referenced with the local regular timetables (`data/7d.json`, `data/7e.json`), `data/teacher_map.json` (code → [name, subject]) and `data/subject_mapping.json` (code → full subject name). A class counts as canceled only when both teacher cells are `<strike>`-d and equal, or the Text column matches ENTFALL/Ausfall/cancel; the same teacher without strikes means a subject/room change, not a cancellation.
 4. **Output** (`format_results`, `print_summary`, `save_results`): deduplicated, grouped by date then by child, printed to console (mobile-friendly format with emoji), and saved to `results/dsb_results.json`.
 
-## Configuration is hardcoded and must stay in sync
+## Configuration
 
-Changing the school year (e.g. 7 → 8) requires touching several places in `dsb_finder.py` together:
-
-- Schedule file list: `for class_file in ['data/7d.json', 'data/7e.json']` (~line 17)
-- Class-prefix normalization `['7d', '7e']` in `extract_timetable_info` (~line 251)
-- Regex fallback pattern `^(7[de])...` in `extract_class_info` (~line 184)
-- `class_to_child` mapping and `all_classes` in `print_summary` (~lines 337–342)
-- `username, password` and `target_classes` in `main()` (~lines 410–411)
-
-Old-year schedules are moved to `_archive/`.
+All per-family configuration lives in `config.json` (gitignored — template in `config.example.json`): DSB credentials, children (name + class + schedule file), and notification settings. Everything else is derived from it: target-class variants ("7d"/"7D"/"7.d"/"7.D"), the child-name mapping in the summary, the malformed-row fallback regex, and which schedule files load. Changing the school year means editing `config.json` and providing the new schedule JSONs. Credentials can also come from `DSB_USERNAME`/`DSB_PASSWORD` env vars, which take precedence over the file. Old-year schedules are moved to `_archive/`.
 
 ## Data file conventions
 

@@ -208,6 +208,36 @@ class TestCredentials(unittest.TestCase):
         self.assertEqual(dsb_finder.get_credentials({}), (None, None))
 
 
+class TestConfigDerivedClasses(unittest.TestCase):
+    def test_class_variants(self):
+        self.assertEqual(dsb_finder.class_variants("8e"),
+                         ["8e", "8E", "8.e", "8.E"])
+
+    def test_target_classes_for_children(self):
+        children = [{"name": "A", "class": "8d"}, {"name": "B", "class": "8e"}]
+        self.assertEqual(
+            dsb_finder.target_classes_for(children),
+            ["8d", "8D", "8.d", "8.D", "8e", "8E", "8.e", "8.E"])
+
+    def test_fallback_regex_uses_target_classes(self):
+        """The malformed-row fallback must recognize whatever classes are
+        configured, not a hardcoded '7[de]' pattern."""
+        page = """
+        <html><body>
+        <div class="mon_title">9.7.2026 Donnerstag</div>
+        <table class="mon_list">
+        <tr><td>8x5ABCDEF E02</td></tr>
+        </table>
+        </body></html>
+        """
+        soup = dsb_finder.BeautifulSoup(page, "html.parser")
+        entries = dsb_finder.extract_class_info(soup, ["8x"])
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0]["class"], "8x")
+        self.assertEqual(entries[0]["period"], "5")
+        self.assertEqual(entries[0]["room"], "E02")
+
+
 class TestConsoleEncoding(unittest.TestCase):
     def test_print_summary_survives_cp1252_stdout(self):
         """On Windows the console can be cp1252; emoji output must not
