@@ -454,6 +454,59 @@ def print_summary(results):
 
     print()
 
+def entry_key(date_str, class_name, entry):
+    return (date_str, class_name, entry.get('period', ''), entry.get('subject', ''),
+            entry.get('original_teacher', ''), entry.get('substitute', ''),
+            entry.get('room', ''), entry.get('notes', ''))
+
+def diff_new_entries(old_results, new_results):
+    """Entries in new_results that were not present in old_results."""
+    old_keys = {entry_key(d, c, e)
+                for d, classes in (old_results or {}).items()
+                for c, entries in classes.items()
+                for e in entries}
+    return [(d, c, e)
+            for d, classes in new_results.items()
+            for c, entries in classes.items()
+            for e in entries
+            if entry_key(d, c, e) not in old_keys]
+
+def compose_notification(new_entries, class_to_child=None):
+    mapping = CLASS_TO_CHILD if class_to_child is None else class_to_child
+    lines = []
+    for date_str, class_name, e in new_entries:
+        child = mapping.get(class_name.lower(), class_name)
+        subject = e.get('regular_subject_full') or e.get('subject_full') or e.get('subject', '')
+        period = e.get('period', '')
+        if e.get('is_canceled'):
+            lines.append(f"❌ {child} {date_str}: {subject} (hora {period}) CANCELADA")
+        elif e.get('original_teacher', '') and e.get('original_teacher', '') == e.get('substitute', ''):
+            new_subject = e.get('subject_full') or subject
+            lines.append(f"🔄 {child} {date_str}: hora {period} cambio a {new_subject} en {e.get('room', '---')}")
+        else:
+            substitute = e.get('substitute_full') or e.get('substitute', '')
+            lines.append(f"🔄 {child} {date_str}: {subject} (hora {period}) sustituye {substitute}")
+    return '\n'.join(lines)
+
+def send_notification(message, notify_cfg=None):
+    cfg = CONFIG.get('notify', {}) if notify_cfg is None else notify_cfg
+    method = cfg.get('method', 'none')
+    try:
+        if method == 'ntfy' and cfg.get('topic'):
+            requests.post(f"https://ntfy.sh/{cfg['topic']}",
+                          data=message.encode('utf-8'),
+                          headers={'Title': 'Plan de sustituciones'},
+                          timeout=15)
+            return True
+        if method == 'termux':
+            import subprocess
+            subprocess.run(['termux-notification', '-t', 'Plan de sustituciones',
+                            '-c', message], check=False)
+            return True
+    except Exception as e:
+        print(f"Error sending notification: {e}")
+    return False
+
 def main():
     username, password = get_credentials()
     if not username or not password:
@@ -472,11 +525,19 @@ def main():
     
     raw_results = extract_timetable_info(json_data, session, target_classes)
     formatted_results = format_results(raw_results, target_classes)
-    print_summary(formatted_results)    
-    
-    save_path = save_results(formatted_results)    
+    print_summary(formatted_results)
+
+    previous_results = load_json_file(os.path.join("results", "dsb_results.json"))
+    new_entries = diff_new_entries(previous_results, formatted_results)
+
+    save_path = save_results(formatted_results)
     if save_path:
         print(f"\nComplete details saved in: {save_path}")
+
+    if new_entries:
+        print(f"🔔 {len(new_entries)} cambio(s) nuevo(s) desde la última ejecución")
+        if send_notification(compose_notification(new_entries)):
+            print("Notificación enviada")
 
 if __name__ == "__main__":
     main()

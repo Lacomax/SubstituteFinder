@@ -238,6 +238,56 @@ class TestConfigDerivedClasses(unittest.TestCase):
         self.assertEqual(entries[0]["room"], "E02")
 
 
+def _entry(period, subject="Kunst", canceled=False, substitute="XX",
+           original="YY"):
+    return {
+        "period": period, "subject": subject.lower(),
+        "subject_full": subject, "regular_subject_full": subject,
+        "room": "B104", "notes": "", "is_canceled": canceled,
+        "substitute": substitute, "original_teacher": original,
+        "substitute_full": f"Sub ({subject})",
+    }
+
+
+class TestNotificationDiff(unittest.TestCase):
+    def test_everything_is_new_on_first_run(self):
+        new = {"9.7.2026 Donnerstag": {"7d": [_entry("1"), _entry("2")]}}
+        self.assertEqual(len(dsb_finder.diff_new_entries({}, new)), 2)
+
+    def test_unchanged_results_produce_empty_diff(self):
+        results = {"9.7.2026 Donnerstag": {"7d": [_entry("1")]}}
+        self.assertEqual(dsb_finder.diff_new_entries(results, results), [])
+
+    def test_only_added_entries_are_reported(self):
+        old = {"9.7.2026 Donnerstag": {"7d": [_entry("1")]}}
+        new = {"9.7.2026 Donnerstag": {"7d": [_entry("1"), _entry("5")]}}
+        fresh = dsb_finder.diff_new_entries(old, new)
+        self.assertEqual(len(fresh), 1)
+        self.assertEqual(fresh[0][2]["period"], "5")
+
+
+class TestNotificationMessage(unittest.TestCase):
+    def test_message_names_child_subject_and_cancellation(self):
+        fresh = [("9.7.2026 Donnerstag", "7d",
+                  _entry("1", subject="Kunst", canceled=True))]
+        msg = dsb_finder.compose_notification(
+            fresh, class_to_child={"7d": "Diego"})
+        self.assertIn("Diego", msg)
+        self.assertIn("Kunst", msg)
+        self.assertIn("CANCELADA", msg)
+        self.assertIn("9.7.2026", msg)
+
+
+class TestNotificationSend(unittest.TestCase):
+    def test_method_none_sends_nothing(self):
+        self.assertFalse(
+            dsb_finder.send_notification("hola", {"method": "none"}))
+
+    def test_ntfy_without_topic_sends_nothing(self):
+        self.assertFalse(
+            dsb_finder.send_notification("hola", {"method": "ntfy"}))
+
+
 class TestConsoleEncoding(unittest.TestCase):
     def test_print_summary_survives_cp1252_stdout(self):
         """On Windows the console can be cp1252; emoji output must not

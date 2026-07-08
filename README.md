@@ -102,6 +102,34 @@ Ejemplo de estructura:
 - `asignatura`: Código de asignatura (ver `data/subject_mapping.json`)
 - `aula`: Sala/aula
 
+## 🔔 Notificaciones
+
+El script compara cada ejecución con la anterior y, si hay cambios nuevos, puede enviarte una notificación al móvil. Se configura en el bloque `notify` de `config.json`:
+
+- `{"method": "none"}` — sin notificaciones (por defecto)
+- `{"method": "ntfy", "topic": "mi-topic-secreto"}` — envía a [ntfy.sh](https://ntfy.sh): instala la app ntfy en el móvil y suscríbete al mismo topic. Elige un nombre de topic difícil de adivinar; cualquiera que lo conozca puede leer los mensajes.
+- `{"method": "termux"}` — notificación local de Android vía `termux-notification` (requiere la app Termux:API y `pkg install termux-api`)
+
+### Ejecución programada
+
+Para que funcione como un servicio que avisa solo, programa la ejecución:
+
+**En Termux (Android):**
+
+```bash
+pkg install cronie termux-services
+sv-enable crond
+crontab -e
+# cada 30 min en horario escolar, de lunes a viernes:
+# */30 6-17 * * 1-5 cd ~/SubstituteFinder && python dsb_finder.py >/dev/null 2>&1
+```
+
+**En Windows (Programador de tareas):**
+
+```powershell
+schtasks /Create /SC HOURLY /TN "SubstituteFinder" /TR "cmd /c cd /d C:\ruta\a\SubstituteFinder && python dsb_finder.py"
+```
+
 ## 📊 Formato de salida
 
 ```
