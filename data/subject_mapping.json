@@ -48,9 +48,8 @@
   "ffme-gta": "Förderung Math. Englisch GTA",
   "ffme": "Förderung Mathe/Englisch",
   "daz-plus7": "Deutsch als Zweitsprache Plus 7",
-  "DaZ-plus7": "Deutsch als Zweitsprache Plus 7",
-  "DaZ-plus7/intf": "DaZ Plus 7/Intensivierung Französisch",
-  "intf/DaZ-plus7": "Intensivierung Französisch/DaZ Plus 7",
-  "DaZ-plus7/intm": "DaZ Plus 7/Intensivierung Mathematik",
-  "intm/DaZ-plus7": "Intensivierung Mathematik/DaZ Plus 7"
+  "daz-plus7/intf": "DaZ Plus 7/Intensivierung Französisch",
+  "intf/daz-plus7": "Intensivierung Französisch/DaZ Plus 7",
+  "daz-plus7/intm": "DaZ Plus 7/Intensivierung Mathematik",
+  "intm/daz-plus7": "Intensivierung Mathematik/DaZ Plus 7"
 }
