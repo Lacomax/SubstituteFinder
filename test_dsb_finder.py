@@ -162,6 +162,25 @@ class TestSameTeacherChangeDisplay(unittest.TestCase):
         self.assertNotIn("->", out)
 
 
+class TestSubjectMappingNormalization(unittest.TestCase):
+    def test_mixed_case_keys_are_lowercased_on_load(self):
+        """Lookups lowercase the subject code, so the mapping must be
+        normalized at load time to tolerate mixed-case keys in the file."""
+        import json
+        import tempfile
+        with tempfile.NamedTemporaryFile(
+                "w", suffix=".json", delete=False, encoding="utf-8") as f:
+            json.dump({"DaZ-plus7/intf": "DaZ Plus 7/Int. Französisch"}, f)
+            path = f.name
+        try:
+            mapping = dsb_finder.load_subject_mapping(path)
+        finally:
+            os.remove(path)
+
+        self.assertEqual(mapping.get("daz-plus7/intf"),
+                         "DaZ Plus 7/Int. Französisch")
+
+
 class TestConsoleEncoding(unittest.TestCase):
     def test_print_summary_survives_cp1252_stdout(self):
         """On Windows the console can be cp1252; emoji output must not

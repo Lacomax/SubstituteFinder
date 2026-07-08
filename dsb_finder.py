@@ -15,7 +15,12 @@ def load_json_file(filename):
     try: return json.load(open(filename, 'r', encoding='utf-8'))
     except Exception as e: return {}
 
-SUBJECT_MAPPING = load_json_file("data/subject_mapping.json")
+def load_subject_mapping(filename):
+    # Lookups lowercase the subject code, so normalize the keys here to
+    # tolerate mixed-case entries in the file (e.g. "DaZ-plus7/intf").
+    return {k.lower(): v for k, v in load_json_file(filename).items()}
+
+SUBJECT_MAPPING = load_subject_mapping("data/subject_mapping.json")
 TEACHER_MAP = load_json_file("data/teacher_map.json")
 CLASS_SCHEDULES = {}
 

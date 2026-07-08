@@ -46,6 +46,7 @@ Old-year schedules are moved to `_archive/`.
 
 - Schedule JSONs use Spanish keys: `clase`, `eventos`, `dia` (1=Monday…5=Friday), `periodo`, `asignatura` (subject code), `aula`. Shared lessons use `/` separators (e.g. `"sw/sm"`, `"TH4/TH2"`).
 - Day names, subjects, and teacher codes are German (from the school); user-facing console output is Spanish; code is English.
+- `subject_mapping.json` keys are matched case-insensitively (normalized to lowercase at load); `teacher_map.json` keys are teacher codes matched exactly as they appear in the plan (usually uppercase).
 
 ## Generated files
 
