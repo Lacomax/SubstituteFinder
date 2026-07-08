@@ -1,3 +1,5 @@
+import contextlib
+import io
 import os
 import subprocess
 import sys
@@ -104,6 +106,60 @@ class TestDebugFilesPerPage(unittest.TestCase):
                         f"missing debug dump for page 2: {expected2}")
         with open(expected2, encoding="utf-8") as f:
             self.assertIn("7e", f.read())
+
+
+class TestCancellationDetection(unittest.TestCase):
+    """Canceled = teacher cells striked AND equal, or the Text column
+    says ENTFALL/CANCELLED or similar. Same teacher without strikes is a
+    subject/room change, not a cancellation."""
+
+    def _extract_single(self, cells):
+        page = make_plan_page("9.7.2026 Donnerstag", [cells])
+        soup = dsb_finder.BeautifulSoup(page, "html.parser")
+        entries = dsb_finder.extract_class_info(soup, ["7d", "7e"])
+        self.assertEqual(len(entries), 1)
+        return entries[0]
+
+    def test_striked_equal_teachers_is_canceled(self):
+        entry = self._extract_single(
+            ["7e", "1", "<strike>HM</strike>", "<strike>HM</strike>",
+             "<strike>m</strike>", "---", ""])
+        self.assertTrue(entry.get("is_canceled", False))
+
+    def test_same_teacher_without_strikes_is_not_canceled(self):
+        entry = self._extract_single(
+            ["7e", "3", "TSA", "TSA", "ntph", "E12", ""])
+        self.assertFalse(entry.get("is_canceled", False))
+
+    def test_entfall_in_text_column_is_canceled(self):
+        entry = self._extract_single(
+            ["7d", "7", "SZ", "SZ", "intm", "---", "intm entf&auml;llt!"])
+        self.assertTrue(entry.get("is_canceled", False))
+
+
+class TestSameTeacherChangeDisplay(unittest.TestCase):
+    def test_same_teacher_change_shows_new_subject_and_room(self):
+        """A non-canceled entry with the same teacher is a subject/room
+        change; show what changed instead of 'X -> X'."""
+        entry = {
+            "period": "3", "class": "7e",
+            "substitute": "TSA", "original_teacher": "TSA",
+            "subject": "ntph", "subject_full": "Natur und Technik (Physik)",
+            "room": "E12", "notes": "",
+            "regular_subject_full": "Natur und Technik",
+            "regular_room": "B101/C8",
+            "original_teacher_full": "Dimitri Tsambrounis (Natur und Technik)",
+            "substitute_full": "Dimitri Tsambrounis (Natur und Technik)",
+        }
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            dsb_finder.print_summary({"9.7.2026 Donnerstag": {"7e": [entry]}})
+        out = buf.getvalue()
+
+        self.assertIn("Cambio", out)
+        self.assertIn("Natur und Technik (Physik)", out)
+        self.assertIn("E12", out)
+        self.assertNotIn("->", out)
 
 
 class TestConsoleEncoding(unittest.TestCase):

@@ -139,12 +139,14 @@ def enhance_entry_details(entry):
     original_teacher = entry.get('original_teacher', '')
     substitute_teacher = entry.get('substitute', '')
     
-    # Check for canceled class
-    is_subject_striked = entry.get('is_subject_striked', False)
-    
-    if original_teacher and substitute_teacher and original_teacher == substitute_teacher:
+    # Canceled = both teacher cells striked and equal, or the Text column
+    # says so. Same teacher without strikes is a subject/room change.
+    teachers_striked = entry.get('is_original_striked', False) and entry.get('is_substitute_striked', False)
+    notes_say_canceled = bool(re.search(r'entf[aä]ll|ausfall|cancel', entry.get('notes', ''), re.IGNORECASE))
+
+    if (original_teacher and substitute_teacher and original_teacher == substitute_teacher and teachers_striked) or notes_say_canceled:
         entry['is_canceled'] = True
-        entry['cancel_reason'] = "ENTFALL" if is_subject_striked else "ENTFALL???"
+        entry['cancel_reason'] = "ENTFALL"
     
     entry['original_teacher_full'] = f"{TEACHER_MAP[original_teacher][0]} ({TEACHER_MAP[original_teacher][1]})" if original_teacher in TEACHER_MAP else f"{original_teacher} (Unknown)" if original_teacher else ''
     
@@ -164,7 +166,9 @@ def extract_class_info(soup, target_classes):
                     original_cell = cells[3]
                     strike_original = original_cell.find('strike')
                     original_teacher = strike_original.text.strip() if strike_original and strike_original.text.strip() else original_cell.get_text(strip=True)
-                    
+                    is_original_striked = bool(strike_original)
+                    is_substitute_striked = bool(cells[2].find('strike'))
+
                     subject_cell = cells[4]
                     is_subject_striked = bool(subject_cell.find('strike'))
                     subject_text = subject_cell.text.strip()
@@ -176,6 +180,8 @@ def extract_class_info(soup, target_classes):
                         "original_teacher": original_teacher,
                         "subject": subject_text,
                         "is_subject_striked": is_subject_striked,
+                        "is_original_striked": is_original_striked,
+                        "is_substitute_striked": is_substitute_striked,
                         "room": cells[5].text.strip(),
                         "notes": cells[6].text.strip() if len(cells) > 6 else ""
                     }
@@ -405,7 +411,12 @@ def print_summary(results):
                             print(f"       {entry.get('notes', '')}")
                     else:
                         print(f"    🔄 Period {period}: {subject} ({room_info})")
-                        if original_teacher and substitute:
+                        same_teacher = entry.get('original_teacher', '') and entry.get('original_teacher', '') == entry.get('substitute', '')
+                        if same_teacher:
+                            new_subject = entry.get('subject_full', '') or entry.get('subject', '')
+                            new_room = entry.get('room', '') or '---'
+                            print(f"       Cambio: {new_subject} en {new_room}")
+                        elif original_teacher and substitute:
                             print(f"       {original_teacher} ->")
                             print(f"       {substitute}")
                         elif substitute:
