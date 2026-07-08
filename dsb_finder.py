@@ -1,8 +1,13 @@
-import requests, json, os, re
+import requests, json, os, re, sys
 from bs4 import BeautifulSoup
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Legacy Windows consoles (cp1252) can't encode the emoji in the summary;
+# degrade unsupported characters to '?' instead of crashing.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(errors="replace")
 os.makedirs("results", exist_ok=True)
 os.makedirs("debug", exist_ok=True)
 
@@ -229,7 +234,10 @@ def extract_timetable_info(json_data, session, target_classes):
                     response = session.get(url, timeout=15)
                 
                 html_content = response.text
-                debug_filename = f"debug/html_{title.replace(' ', '_').replace(':', '_')}.html"
+                # All pages of a plan share the child title, so key the dump
+                # by the page name from the URL (subst_001, subst_002, ...).
+                page_name = os.path.splitext(os.path.basename(url.split('?')[0]))[0]
+                debug_filename = f"debug/html_{title.replace(' ', '_').replace(':', '_')}_{page_name}.html"
                 with open(debug_filename, "w", encoding="utf-8") as f:
                     f.write(html_content)
                 
@@ -261,8 +269,12 @@ def extract_timetable_info(json_data, session, target_classes):
             except Exception as url_error:
                 print(f"Error processing URL {url}: {url_error}")
             
+            # A plan can span several subst_NNN.htm pages sharing the same
+            # date title, so merge per class instead of overwriting the date.
             if plan_results:
-                all_results[date_str] = plan_results
+                date_results = all_results.setdefault(date_str, {})
+                for cls, entries in plan_results.items():
+                    date_results.setdefault(cls, []).extend(entries)
             
         return all_results
         
