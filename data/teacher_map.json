@@ -11,6 +11,10 @@
     "Julia Akodad",
     ""
   ],
+  "ALI": [
+    "Alen Alija",
+    ""
+  ],
   "AS": [
     "Deborah Aschoff",
     ""
@@ -87,6 +91,10 @@
     "Ina Dahlhaus",
     ""
   ],
+  "DAL": [
+    "Nazmiye Dalbay",
+    ""
+  ],
   "DD": [
     "Dominik Draxler",
     ""
@@ -119,13 +127,13 @@
     "Irene Daxecker-Sproesser",
     ""
   ],
+  "EBE": [
+    "Karin Eberle",
+    ""
+  ],
   "EG": [
     "Amerina Engel",
     ""
-  ],
-  "EGH": [
-    "Jasmin Eghbaly",
-    "Ethik"
   ],
   "EIH": [
     "Verena Eihoff",
@@ -195,20 +203,16 @@
     "Maximilian Hahn",
     ""
   ],
+  "HAN": [
+    "Lion Hansmaier",
+    ""
+  ],
   "HAU": [
     "Gerlinde Hautz",
     ""
   ],
   "HB": [
     "Gerhard Huber",
-    ""
-  ],
-  "HD": [
-    "Nathalie Hausdorf",
-    ""
-  ],
-  "HAN": [
-    "Lion Hansmaier",
     ""
   ],
   "HF": [
@@ -291,10 +295,6 @@
     "Ines Klante",
     ""
   ],
-  "KLE": [
-    "Julia Kleber",
-    ""
-  ],
   "KO": [
     "Edith Kosakowski",
     ""
@@ -317,10 +317,6 @@
   ],
   "KUH": [
     "Stefan Küchemann",
-    ""
-  ],
-  "KW": [
-    "Claudia Kantwill-Hoffmann",
     ""
   ],
   "LAN": [
@@ -415,6 +411,10 @@
     "Pascal Neumann",
     ""
   ],
+  "NNWOE": [
+    "Tina Wörle",
+    "Sport"
+  ],
   "PA": [
     "Elena Pfaff",
     ""
@@ -447,10 +447,6 @@
     "Annalena Rebele",
     "Kunst"
   ],
-  "RE": [
-    "Marietheres Rebele",
-    ""
-  ],
   "REB": [
     "Marietheres Rebele",
     ""
@@ -466,10 +462,6 @@
   "RIC": [
     "Stephanie Richter",
     ""
-  ],
-  "RL": [
-    "Unbekannter Lehrer",
-    "Kunst"
   ],
   "RM": [
     "Insa Remmers",
@@ -493,10 +485,6 @@
   ],
   "SAL": [
     "Josepha von Salza",
-    ""
-  ],
-  "SB": [
-    "Heidrun Siller-Brabant",
     ""
   ],
   "SC": [
@@ -534,10 +522,6 @@
   "SL": [
     "Claudia Schöttl",
     ""
-  ],
-  "SM": [
-    "Benedikt Singhammer",
-    "Mathematik/Natur und Technik"
   ],
   "SOK": [
     "Ondrej Sokola",
@@ -615,10 +599,6 @@
     "Jochen Trux",
     ""
   ],
-  "TZ": [
-    "Gerhard Tietz",
-    ""
-  ],
   "V": [
     "V-Plan Vertretungsplan",
     ""
@@ -639,17 +619,9 @@
     "Terry Woods",
     "Französisch"
   ],
-  "WEI": [
-    "Jule Weiss",
-    ""
-  ],
   "WG": [
     "Arthur Weigl",
     ""
-  ],
-  "NNWOE": [
-    "Tina Wörle",
-    "Sport"
   ],
   "WIL": [
     "Yannick Wille",
