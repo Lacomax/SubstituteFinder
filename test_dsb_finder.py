@@ -162,6 +162,116 @@ class TestSameTeacherChangeDisplay(unittest.TestCase):
         self.assertNotIn("->", out)
 
 
+class TestSharedSlotCancellationDisplay(unittest.TestCase):
+    """k/ev/eth religion groups share one slot; the regular timetable name
+    ('Religion') is the same for all of them, so the output must also show
+    the plan's own subject or two canceled groups look like duplicates."""
+
+    def _entry(self, subject, subject_full, teacher):
+        return {
+            "period": "5", "class": "7e",
+            "substitute": teacher, "original_teacher": teacher,
+            "subject": subject, "subject_full": subject_full,
+            "room": "---", "notes": "",
+            "is_canceled": True, "cancel_reason": "ENTFALL",
+            "regular_subject_full": "Religion",
+            "regular_room": "A102/A201/A105",
+        }
+
+    def test_two_canceled_groups_in_shared_slot_are_distinguishable(self):
+        entries = [
+            self._entry("k", "Kath. Religionslehre", "DOE"),
+            self._entry("eth", "Ethik", "KAG"),
+        ]
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            dsb_finder.print_summary({"14.7.2026 Dienstag": {"7e": entries}})
+        out = buf.getvalue()
+
+        self.assertIn("Kath. Religionslehre", out)
+        self.assertIn("Ethik", out)
+
+    def test_identical_regular_and_plan_subject_is_not_repeated(self):
+        entry = self._entry("ffme", "Förderung Mathe/Englisch", "HAU")
+        entry["regular_subject_full"] = "Förderung Mathe/Englisch"
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            dsb_finder.print_summary({"14.7.2026 Dienstag": {"7e": [entry]}})
+        out = buf.getvalue()
+
+        self.assertEqual(out.count("Förderung Mathe/Englisch"), 1)
+
+    def test_notification_names_the_specific_group(self):
+        msg = dsb_finder.compose_notification(
+            [("14.7.2026 Dienstag", "7e", self._entry("eth", "Ethik", "KAG"))],
+            class_to_child={"7e": "Mateo"})
+        self.assertIn("Ethik", msg)
+
+
+class TestExcludedSubjects(unittest.TestCase):
+    """Children only attend one group of a shared slot (k/ev/eth,
+    DaZ-plus7/intf); subjects listed in the child's excluded_subjects
+    must be dropped from the results before printing/saving/diffing."""
+
+    def _entry(self, subject, subject_full):
+        return {"period": "5", "subject": subject,
+                "subject_full": subject_full, "is_canceled": True}
+
+    def _results(self, class_name, entries):
+        return {"14.7.2026 Dienstag": {class_name: entries}}
+
+    def test_excluded_by_code(self):
+        results = self._results("7e", [self._entry("eth", "Ethik")])
+        out = dsb_finder.filter_excluded_subjects(
+            results, {"7e": {"eth"}})
+        self.assertEqual(out, {})
+
+    def test_excluded_by_full_name(self):
+        results = self._results("7e", [self._entry("eth", "Ethik")])
+        out = dsb_finder.filter_excluded_subjects(
+            results, {"7e": {"ethik"}})
+        self.assertEqual(out, {})
+
+    def test_matching_is_case_insensitive(self):
+        results = self._results("7e", [self._entry("DaZ-plus7",
+                                                   "Deutsch als Zweitsprache Plus 7")])
+        out = dsb_finder.filter_excluded_subjects(
+            results, {"7e": {"daz-plus7"}})
+        self.assertEqual(out, {})
+
+    def test_no_substring_matching(self):
+        """'l' (Latein) must not exclude 'lint' (Latein Intensiv)."""
+        results = self._results("7e", [self._entry("lint", "Latein Intensiv")])
+        out = dsb_finder.filter_excluded_subjects(
+            results, {"7e": {"l", "latein"}})
+        self.assertEqual(out, results)
+
+    def test_exclusions_are_per_class(self):
+        results = {"14.7.2026 Dienstag": {
+            "7d": [self._entry("eth", "Ethik")],
+            "7e": [self._entry("eth", "Ethik")],
+        }}
+        out = dsb_finder.filter_excluded_subjects(
+            results, {"7d": {"eth"}})
+        self.assertEqual(list(out["14.7.2026 Dienstag"].keys()), ["7e"])
+
+    def test_kept_entries_survive_alongside_excluded(self):
+        results = self._results("7e", [
+            self._entry("k", "Kath. Religionslehre"),
+            self._entry("eth", "Ethik"),
+        ])
+        out = dsb_finder.filter_excluded_subjects(
+            results, {"7e": {"eth"}})
+        entries = out["14.7.2026 Dienstag"]["7e"]
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0]["subject"], "k")
+
+    def test_no_exclusions_passes_through(self):
+        results = self._results("7e", [self._entry("eth", "Ethik")])
+        out = dsb_finder.filter_excluded_subjects(results, {})
+        self.assertEqual(out, results)
+
+
 class TestSubjectMappingNormalization(unittest.TestCase):
     def test_mixed_case_keys_are_lowercased_on_load(self):
         """Lookups lowercase the subject code, so the mapping must be

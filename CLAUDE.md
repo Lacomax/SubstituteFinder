@@ -33,7 +33,7 @@ On legacy Windows consoles (cp1252) unsupported characters degrade to `?` (stdou
 
 ## Configuration
 
-All per-family configuration lives in `config.json` (gitignored — template in `config.example.json`): DSB credentials, children (name + class + schedule file), and notification settings. Everything else is derived from it: target-class variants ("7d"/"7D"/"7.d"/"7.D"), the child-name mapping in the summary, the malformed-row fallback regex, and which schedule files load. Changing the school year means editing `config.json` and providing the new schedule JSONs. Credentials can also come from `DSB_USERNAME`/`DSB_PASSWORD` env vars, which take precedence over the file. Old-year schedules are moved to `_archive/`.
+All per-family configuration lives in `config.json` (gitignored — template in `config.example.json`): DSB credentials, children (name + class + schedule file + optional `excluded_subjects`), and notification settings. `excluded_subjects` drops plan entries for groups of a shared slot the child does not attend (e.g. Ethik in `k/ev/eth`, DaZ-plus7 in `DaZ-plus7/intf`); terms match the plan entry's subject code or full name, case-insensitively and never by substring, and matching entries are removed everywhere (console, saved JSON, notifications) by `filter_excluded_subjects`. Everything else is derived from it: target-class variants ("7d"/"7D"/"7.d"/"7.D"), the child-name mapping in the summary, the malformed-row fallback regex, and which schedule files load. Changing the school year means editing `config.json` and providing the new schedule JSONs. Credentials can also come from `DSB_USERNAME`/`DSB_PASSWORD` env vars, which take precedence over the file. Old-year schedules are moved to `_archive/`.
 
 ## Data file conventions
 

@@ -72,14 +72,22 @@ cp config.example.json config.json
 {
   "credentials": {"username": "TU_USUARIO_DSB", "password": "TU_CONTRASEÑA_DSB"},
   "children": [
-    {"name": "NombreHijo1", "class": "7d", "schedule": "data/7d.json"},
-    {"name": "NombreHijo2", "class": "7e", "schedule": "data/7e.json"}
+    {"name": "NombreHijo1", "class": "7d", "schedule": "data/7d.json",
+     "excluded_subjects": ["Ethik", "Latein", "DaZ-plus7"]},
+    {"name": "NombreHijo2", "class": "7e", "schedule": "data/7e.json",
+     "excluded_subjects": []}
   ],
   "notify": {"method": "none", "topic": ""}
 }
 ```
 
 `config.json` está en `.gitignore`: tus credenciales no se suben a git. También puedes usar las variables de entorno `DSB_USERNAME` y `DSB_PASSWORD`, que tienen prioridad sobre el archivo. Las clases objetivo, los nombres mostrados y los horarios cargados se derivan todos de `children`.
+
+#### Asignaturas excluidas (`excluded_subjects`)
+
+En las franjas compartidas del horario (p. ej. religión `k/ev/eth`, o `DaZ-plus7/intf`) la clase se divide en grupos y el plan de sustituciones publica una fila por cada grupo, aunque tu hijo solo asista a uno. Con `excluded_subjects` (opcional, por hijo) esas filas se descartan por completo: no aparecen en consola, ni en `results/dsb_results.json`, ni generan notificaciones.
+
+Cada término se compara sin distinguir mayúsculas contra el **código** de la asignatura del plan (`eth`, `l`, `daz-plus7`) y contra su **nombre completo** según `data/subject_mapping.json` (`Ethik`, `Latein`). La coincidencia es exacta, nunca por subcadena: `"l"` excluye Latein pero no toca `lint` (Latein Intensiv). El filtro actúa sobre la asignatura del plan, no sobre la franja del horario: excluir `DaZ-plus7` oculta "DaZ cancelada", pero una cancelación de `intf` (el otro grupo de la misma franja) se sigue mostrando.
 
 ### 2. Horarios de clase
 
@@ -146,8 +154,12 @@ schtasks /Create /SC HOURLY /TN "SubstituteFinder" /TR "cmd /c cd /d C:\ruta\a\S
        CANCELADA
        intm entfällt!
 
-  📚 Mateo (7e): ✅ Sin cambios
+  📚 Mateo (7e):
+    ❌ Period 5: Religion – Kath. Religionslehre (A102/A201/A105)
+       CANCELADA
 ```
+
+En las franjas compartidas, la cabecera muestra `franja – grupo` (p. ej. `Religion – Kath. Religionslehre`) para distinguir qué grupo se cancela o cambia.
 
 ### Símbolos
 

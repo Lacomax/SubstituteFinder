@@ -29,6 +29,8 @@ CHILDREN = CONFIG.get('children', [])
 BASE_CLASSES = [ch['class'].lower() for ch in CHILDREN]
 TARGET_CLASSES = target_classes_for(CHILDREN)
 CLASS_TO_CHILD = {ch['class'].lower(): ch['name'] for ch in CHILDREN}
+EXCLUDED_BY_CLASS = {ch['class'].lower(): {s.lower() for s in ch.get('excluded_subjects', [])}
+                     for ch in CHILDREN}
 
 def get_credentials(config=None):
     cfg = CONFIG if config is None else config
@@ -376,6 +378,42 @@ def get_statistics(results):
                     stats[class_name]['substituted'] += 1
     return stats
 
+def filter_excluded_subjects(results, excluded_by_class=None):
+    """Drop plan entries for subjects the child does not attend.
+
+    Shared slots (k/ev/eth, DaZ-plus7/intf...) produce one plan row per
+    group, but each child only attends one of them; the others are listed
+    in the child's excluded_subjects in config.json. A term matches when
+    it equals the entry's subject code or full name, case-insensitively —
+    never by substring, so 'l' (Latein) leaves 'lint' alone."""
+    excluded_map = EXCLUDED_BY_CLASS if excluded_by_class is None else excluded_by_class
+    filtered = {}
+    for date_str, classes in results.items():
+        kept_classes = {}
+        for class_name, entries in classes.items():
+            excluded = excluded_map.get(class_name.lower(), set())
+            kept = [e for e in entries
+                    if e.get('subject', '').lower() not in excluded
+                    and e.get('subject_full', '').lower() not in excluded]
+            if kept:
+                kept_classes[class_name] = kept
+        if kept_classes:
+            filtered[date_str] = kept_classes
+    return filtered
+
+def display_subject(entry):
+    """Headline subject for an entry, qualified when the slot is shared.
+
+    In shared slots (k/ev/eth, sw/sm...) the regular timetable name is the
+    same for every group, so two canceled groups in the same period would
+    render as identical lines; append the plan's own subject to tell them
+    apart."""
+    regular = entry.get('regular_subject_full', '')
+    actual = entry.get('subject_full', '') or entry.get('subject', '')
+    if regular and actual and actual != regular:
+        return f"{regular} – {actual}"
+    return regular or actual
+
 def print_summary(results):
     if not results:
         print("\n✅ Sin cambios - No hay sustituciones ni cancelaciones")
@@ -406,9 +444,7 @@ def print_summary(results):
                     period = entry.get('period', '')
 
                     # Obtener asignatura y aula
-                    regular_subject = entry.get('regular_subject_full', '')
-                    subject_full = entry.get('subject_full', '')
-                    subject = regular_subject or subject_full or entry.get('subject', '')
+                    subject = display_subject(entry)
 
                     regular_room = entry.get('regular_room', '')
                     room = entry.get('room', '')
@@ -476,7 +512,7 @@ def compose_notification(new_entries, class_to_child=None):
     lines = []
     for date_str, class_name, e in new_entries:
         child = mapping.get(class_name.lower(), class_name)
-        subject = e.get('regular_subject_full') or e.get('subject_full') or e.get('subject', '')
+        subject = display_subject(e)
         period = e.get('period', '')
         if e.get('is_canceled'):
             lines.append(f"❌ {child} {date_str}: {subject} (hora {period}) CANCELADA")
@@ -524,7 +560,7 @@ def main():
         return
     
     raw_results = extract_timetable_info(json_data, session, target_classes)
-    formatted_results = format_results(raw_results, target_classes)
+    formatted_results = filter_excluded_subjects(format_results(raw_results, target_classes))
     print_summary(formatted_results)
 
     previous_results = load_json_file(os.path.join("results", "dsb_results.json"))
