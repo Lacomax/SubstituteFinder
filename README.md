@@ -140,26 +140,27 @@ schtasks /Create /SC HOURLY /TN "SubstituteFinder" /TR "cmd /c cd /d C:\ruta\a\S
 
 ## 📊 Formato de salida
 
+El formato está pensado para el ancho de un móvil (Termux): `H3` = hora/período 3, sin listas de aulas en la cabecera, y en franjas compartidas se muestra la asignatura del grupo concreto (p. ej. `Kath. Religionslehre`, no la franja genérica `Religion`).
+
 ```
 ==========
 📅 18.11.2025 Dienstag
 ==========
 
-  📚 Diego (7d):
-    🔄 Period 3: Mathematik (A104)
-       Michelle Schmidt ->
-       Sandra Canals (Mathematik)
+ 📚 Diego (7d):
+  🔄 H3 Mathematik
+     Michelle Schmidt ->
+     Sandra Canals (Mathematik)
+  ❌ H7 Intensivierung Mathematik
+     CANCELADA
+     intm entfällt!
 
-    ❌ Period 7: Intensivierung Mathematik (A104)
-       CANCELADA
-       intm entfällt!
-
-  📚 Mateo (7e):
-    ❌ Period 5: Religion – Kath. Religionslehre (A102/A201/A105)
-       CANCELADA
+ 📚 Mateo (7e):
+  ❌ H5 Kath. Religionslehre
+     CANCELADA
+  🔄 H6 Kath. Religionslehre
+     Cambio: en A203
 ```
-
-En las franjas compartidas, la cabecera muestra `franja – grupo` (p. ej. `Religion – Kath. Religionslehre`) para distinguir qué grupo se cancela o cambia.
 
 ### Símbolos
 

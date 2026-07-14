@@ -406,18 +406,13 @@ def filter_excluded_subjects(results, excluded_by_class=None):
             filtered[date_str] = kept_classes
     return filtered
 
-def display_subject(entry):
-    """Headline subject for an entry, qualified when the slot is shared.
-
-    In shared slots (k/ev/eth, sw/sm...) the regular timetable name is the
-    same for every group, so two canceled groups in the same period would
-    render as identical lines; append the plan's own subject to tell them
-    apart."""
-    regular = entry.get('regular_subject_full', '')
-    actual = entry.get('subject_full', '') or entry.get('subject', '')
-    if regular and actual and actual != regular:
-        return f"{regular} – {actual}"
-    return regular or actual
+def plan_subject(entry):
+    """Headline subject for an entry: the plan's own subject, which in
+    shared slots (k/ev/eth, DaZ-plus7/intf...) names the specific group —
+    the generic slot name would make two groups render identically. Kept
+    short: phone terminals (Termux) are ~40-50 chars wide."""
+    return (entry.get('subject_full', '') or entry.get('subject', '')
+            or entry.get('regular_subject_full', ''))
 
 def print_summary(results):
     if not results:
@@ -441,20 +436,13 @@ def print_summary(results):
 
             if class_name in classes:
                 entries = classes[class_name]
-                print(f"\n  📚 {child_name} ({class_name}):")
+                print(f"\n 📚 {child_name} ({class_name}):")
 
                 sorted_entries = sorted(entries, key=lambda x: int(x.get('period', '0')) if x.get('period', '0').isdigit() else 0)
 
                 for entry in sorted_entries:
                     period = entry.get('period', '')
-
-                    # Obtener asignatura y aula
-                    subject = display_subject(entry)
-
-                    regular_room = entry.get('regular_room', '')
-                    room = entry.get('room', '')
-                    room_info = regular_room or room or '---'
-
+                    subject = plan_subject(entry)
                     is_canceled = entry.get('is_canceled', False)
 
                     # Información del profesor (sin asignatura para el original)
@@ -469,29 +457,28 @@ def print_summary(results):
 
                     substitute = entry.get('substitute_full', '') or entry.get('substitute', '')
 
-                    # Formato compacto
+                    # Formato compacto (ancho de móvil: sin sala en la cabecera)
                     if is_canceled:
-                        print(f"    ❌ Period {period}: {subject} ({room_info})")
-                        print(f"       CANCELADA")
+                        print(f"  ❌ H{period} {subject}")
+                        print(f"     CANCELADA")
                         if entry.get('notes', ''):
-                            print(f"       {entry.get('notes', '')}")
+                            print(f"     {entry.get('notes', '')}")
                     else:
-                        print(f"    🔄 Period {period}: {subject} ({room_info})")
+                        print(f"  🔄 H{period} {subject}")
                         same_teacher = entry.get('original_teacher', '') and entry.get('original_teacher', '') == entry.get('substitute', '')
                         if same_teacher:
-                            new_subject = entry.get('subject_full', '') or entry.get('subject', '')
                             new_room = entry.get('room', '') or '---'
-                            print(f"       Cambio: {new_subject} en {new_room}")
+                            print(f"     Cambio: en {new_room}")
                         elif original_teacher and substitute:
-                            print(f"       {original_teacher} ->")
-                            print(f"       {substitute}")
+                            print(f"     {original_teacher} ->")
+                            print(f"     {substitute}")
                         elif substitute:
-                            print(f"       Sustituto: {substitute}")
+                            print(f"     Sustituto: {substitute}")
 
                         if entry.get('notes', ''):
-                            print(f"       Nota: {entry.get('notes', '')}")
+                            print(f"     Nota: {entry.get('notes', '')}")
             else:
-                print(f"\n  📚 {child_name} ({class_name}): ✅ Sin cambios")
+                print(f"\n 📚 {child_name} ({class_name}): ✅ Sin cambios")
 
     print()
 
@@ -517,7 +504,7 @@ def compose_notification(new_entries, class_to_child=None):
     lines = []
     for date_str, class_name, e in new_entries:
         child = mapping.get(class_name.lower(), class_name)
-        subject = display_subject(e)
+        subject = plan_subject(e)
         period = e.get('period', '')
         if e.get('is_canceled'):
             lines.append(f"❌ {child} {date_str}: {subject} (hora {period}) CANCELADA")

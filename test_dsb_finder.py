@@ -398,6 +398,45 @@ class TestNotificationSend(unittest.TestCase):
             dsb_finder.send_notification("hola", {"method": "ntfy"}))
 
 
+class TestCompactMobileFormat(unittest.TestCase):
+    """Termux phone screens are ~40-50 chars wide: the headline uses 'H5'
+    instead of 'Period 5', drops the room list, and shows only the plan's
+    own subject (excluded_subjects already removes the other groups of a
+    shared slot). Teacher names in substitutions must survive."""
+
+    def _print(self, entry):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            dsb_finder.print_summary({"14.7.2026 Dienstag": {"7e": [entry]}})
+        return buf.getvalue()
+
+    def test_period_is_abbreviated(self):
+        out = self._print(_entry("5", canceled=True))
+        self.assertIn("H5", out)
+        self.assertNotIn("Period", out)
+
+    def test_headline_has_no_room_list(self):
+        e = _entry("5", canceled=True)
+        e["regular_room"] = "A102/A201/A105"
+        out = self._print(e)
+        self.assertNotIn("A102/A201/A105", out)
+
+    def test_headline_shows_plan_subject_without_slot_prefix(self):
+        e = _entry("5", subject="Ethik", canceled=True)
+        e["regular_subject_full"] = "Religion"
+        out = self._print(e)
+        self.assertIn("Ethik", out)
+        self.assertNotIn("Religion", out)
+
+    def test_teacher_substitution_keeps_both_names(self):
+        e = _entry("3", substitute="ABC", original="XYZ")
+        e["original_teacher_full"] = "Michelle Schmidt (Mathematik)"
+        e["substitute_full"] = "Sandra Canals (Mathematik)"
+        out = self._print(e)
+        self.assertIn("Michelle Schmidt", out)
+        self.assertIn("Sandra Canals", out)
+
+
 class TestConsoleEncoding(unittest.TestCase):
     def test_print_summary_survives_cp1252_stdout(self):
         """On Windows the console can be cp1252; emoji output must not
