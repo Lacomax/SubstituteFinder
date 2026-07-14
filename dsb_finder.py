@@ -8,6 +8,11 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # degrade unsupported characters to '?' instead of crashing.
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(errors="replace")
+
+# config.json, data/, results/ and debug/ are addressed with relative paths;
+# anchor them to the script's own directory so the script works when invoked
+# from anywhere (cron, Termux from $HOME, absolute path).
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.makedirs("results", exist_ok=True)
 os.makedirs("debug", exist_ok=True)
 

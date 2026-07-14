@@ -423,5 +423,28 @@ class TestConsoleEncoding(unittest.TestCase):
             f"script crashed on cp1252 stdout:\n{result.stderr}")
 
 
+class TestRunFromAnyDirectory(unittest.TestCase):
+    def test_module_finds_its_data_files_from_foreign_cwd(self):
+        """'python ~/SubstituteFinder/dsb_finder.py' run from $HOME
+        (Termux, cron) must find config.json and data/ next to the
+        script, not relative to the caller's cwd."""
+        import tempfile
+        repo = os.path.dirname(os.path.abspath(__file__))
+        code = (
+            f"import sys; sys.path.insert(0, {repo!r}); "
+            "import dsb_finder; "
+            "sys.exit(0 if dsb_finder.SUBJECT_MAPPING else 1)"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [sys.executable, "-c", code],
+                capture_output=True, text=True, cwd=tmp)
+
+        self.assertEqual(
+            result.returncode, 0,
+            "data/subject_mapping.json not found when cwd is elsewhere:\n"
+            + result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()
